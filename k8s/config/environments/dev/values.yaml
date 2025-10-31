@@ -1,0 +1,58 @@
+# Development Environment Configuration
+# Environment-specific values for development deployment
+
+# Cluster configuration
+cluster:
+  name: "dev-gke-cluster"
+  location: "us-central1-a"
+  environment: "development"
+  
+# Node pool configuration
+nodePool:
+  system:
+    machineType: "e2-medium"
+    diskSizeGb: 50
+    minNodes: 1
+    maxNodes: 3
+  application:
+    machineType: "e2-standard-2"
+    diskSizeGb: 50
+    minNodes: 1
+    maxNodes: 5
+
+# ArgoCD configuration
+argocd:
+  domain: "argocd-dev.example.com"
+  replicas: 1
+  resources:
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+
+# Cloudflare configuration
+cloudflare:
+  domain: "dev.example.com"
+  zoneId: "dev-zone-id"
+  
+# Monitoring configuration
+monitoring:
+  prometheus:
+    retention: "7d"
+    storage: "20Gi"
+    replicas: 1
+  grafana:
+    storage: "5Gi"
+  alertmanager:
+    storage: "2Gi"
+
+# Storage configuration
+storage:
+  defaultClass: "standard-hdd"
+  
+# Security configuration
+security:
+  networkPolicies: false
+  podSecurityStandards: "baseline"

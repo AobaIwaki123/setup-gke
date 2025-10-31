@@ -1,0 +1,64 @@
+# Production Environment Configuration
+# Environment-specific values for production deployment
+
+# Cluster configuration
+cluster:
+  name: "production-gke-cluster"
+  location: "us-central1"
+  environment: "production"
+  
+# Node pool configuration
+nodePool:
+  system:
+    machineType: "e2-standard-4"
+    diskSizeGb: 100
+    minNodes: 2
+    maxNodes: 5
+  application:
+    machineType: "e2-standard-4"
+    diskSizeGb: 100
+    minNodes: 3
+    maxNodes: 10
+
+# ArgoCD configuration
+argocd:
+  domain: "argocd.example.com"
+  replicas: 3
+  resources:
+    limits:
+      cpu: "2000m"
+      memory: "4Gi"
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+
+# Cloudflare configuration
+cloudflare:
+  domain: "example.com"
+  zoneId: "production-zone-id"
+  
+# Monitoring configuration
+monitoring:
+  prometheus:
+    retention: "30d"
+    storage: "50Gi"
+    replicas: 2
+  grafana:
+    storage: "10Gi"
+  alertmanager:
+    storage: "5Gi"
+
+# Storage configuration
+storage:
+  defaultClass: "fast-ssd"
+  
+# Security configuration
+security:
+  networkPolicies: true
+  podSecurityStandards: "restricted"
+  
+# Backup configuration
+backup:
+  enabled: true
+  schedule: "0 2 * * *"
+  retention: "30d"

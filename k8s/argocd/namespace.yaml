@@ -1,0 +1,13 @@
+# ArgoCD Namespace
+# Based on requirements 2.1, 2.2 from the requirements document
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: argocd
+  labels:
+    name: argocd
+    component: gitops
+    managed-by: kubernetes
+  annotations:
+    description: "Namespace for ArgoCD GitOps deployment tool"

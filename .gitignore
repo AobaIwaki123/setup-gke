@@ -1,0 +1,53 @@
+# Kubernetes Secrets and Sensitive Files
+k8s/*/secrets.yaml
+k8s/*/*/secrets.yaml
+*.secret
+*.key
+*.pem
+
+# Environment-specific overrides
+k8s/config/environments/*/secrets/
+k8s/config/environments/*/override.yaml
+
+# Temporary files
+*.tmp
+*.log
+validation.log
+deployment.log
+
+# Backup files
+*.bak
+*.backup
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Terraform files (if using Terraform for cluster provisioning)
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# Helm files (if using Helm)
+charts/*/charts/
+charts/*/requirements.lock
+
+# Kustomize build output
+kustomization.yaml.bak
+
+# Local development files
+local/
+dev-override/

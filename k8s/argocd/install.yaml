@@ -1,0 +1,50 @@
+# ArgoCD Installation Manifest
+# This is a placeholder for the ArgoCD installation
+# The actual installation will use the official ArgoCD manifests
+# Based on requirements 2.1, 2.5 from the requirements document
+
+# Note: This file should be replaced with the official ArgoCD installation manifest
+# Download from: https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+# For high availability setup, use:
+# https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/ha/install.yaml
+
+# The installation includes:
+# - ArgoCD Server (API and Web UI)
+# - ArgoCD Application Controller
+# - ArgoCD Repository Server
+# - ArgoCD Redis (for caching)
+# - ArgoCD Notifications Controller
+
+# Custom configurations will be applied via patches or separate manifests
+# to maintain compatibility with upstream ArgoCD releases
+
+---
+# Placeholder ConfigMap for ArgoCD Server configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-server-config
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: argocd-server-config
+    app.kubernetes.io/part-of: argocd
+data:
+  # Server configuration will be added here
+  # Including RBAC, authentication, and other server settings
+  url: "https://argocd.example.com"  # Replace with actual domain
+  
+---
+# Placeholder ConfigMap for ArgoCD Command configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-cmd-params-cm
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: argocd-cmd-params-cm
+    app.kubernetes.io/part-of: argocd
+data:
+  # Command parameters for ArgoCD components
+  server.insecure: "false"
+  server.grpc.web: "true"

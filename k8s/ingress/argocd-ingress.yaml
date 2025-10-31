@@ -1,0 +1,118 @@
+# ArgoCD Ingress Configuration
+# Based on requirements 4.1, 4.2, 4.3, 4.4, 4.5 from the requirements document
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argocd-ingress
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: argocd-ingress
+    app.kubernetes.io/component: ingress
+  annotations:
+    # Cloudflare Ingress Controller annotations
+    kubernetes.io/ingress.class: "cloudflare"
+    
+    # SSL/TLS configuration
+    cert-manager.io/cluster-issuer: "cloudflare-issuer"
+    
+    # Cloudflare specific annotations
+    cloudflare.com/proxied: "true"
+    cloudflare.com/ssl-mode: "strict"
+    
+    # Security annotations
+    cloudflare.com/waf: "on"
+    cloudflare.com/security-level: "medium"
+    cloudflare.com/browser-integrity-check: "on"
+    
+    # Performance annotations
+    cloudflare.com/cache-level: "bypass"
+    cloudflare.com/rocket-loader: "off"
+    
+    # ArgoCD specific annotations
+    nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
+    nginx.ingress.kubernetes.io/grpc-backend: "true"
+    nginx.ingress.kubernetes.io/server-snippet: |
+      grpc_read_timeout 300;
+      grpc_send_timeout 300;
+      client_body_timeout 60;
+      client_header_timeout 60;
+      client_max_body_size 1m;
+    
+    # Session affinity for ArgoCD
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+    nginx.ingress.kubernetes.io/session-cookie-name: "argocd-server"
+    nginx.ingress.kubernetes.io/session-cookie-expires: "86400"
+    nginx.ingress.kubernetes.io/session-cookie-max-age: "86400"
+    nginx.ingress.kubernetes.io/session-cookie-path: "/"
+    
+spec:
+  # TLS configuration
+  tls:
+  - hosts:
+    - argocd.example.com  # Replace with actual domain
+    secretName: argocd-tls-secret
+  
+  # Ingress rules
+  rules:
+  - host: argocd.example.com  # Replace with actual domain
+    http:
+      paths:
+      # ArgoCD Web UI
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: argocd-server
+            port:
+              number: 80
+      
+      # ArgoCD gRPC API
+      - path: /argocd.server
+        pathType: Prefix
+        backend:
+          service:
+            name: argocd-server
+            port:
+              number: 443
+
+---
+# Certificate for ArgoCD ingress (if using cert-manager)
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: argocd-tls-certificate
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: argocd-certificate
+    app.kubernetes.io/component: tls
+spec:
+  secretName: argocd-tls-secret
+  issuerRef:
+    name: cloudflare-issuer
+    kind: ClusterIssuer
+  dnsNames:
+  - argocd.example.com  # Replace with actual domain
+  
+---
+# ClusterIssuer for Cloudflare (if using cert-manager)
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: cloudflare-issuer
+  labels:
+    app.kubernetes.io/name: cloudflare-issuer
+    app.kubernetes.io/component: certificate-issuer
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: admin@example.com  # Replace with actual email
+    privateKeySecretRef:
+      name: cloudflare-issuer-account-key
+    solvers:
+    - dns01:
+        cloudflare:
+          email: admin@example.com  # Replace with actual email
+          apiTokenSecretRef:
+            name: cloudflare-api-token
+            key: api-token

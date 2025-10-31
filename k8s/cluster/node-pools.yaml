@@ -1,0 +1,105 @@
+# GKE Node Pool Configurations
+# Separate node pools for system workloads and application workloads
+# Based on requirements 1.1, 1.2 from the requirements document
+
+---
+# System Node Pool - for system components like ArgoCD, monitoring
+apiVersion: container.v1
+kind: NodePool
+metadata:
+  name: system-pool
+  cluster: production-gke-cluster
+spec:
+  # Node configuration
+  nodeConfig:
+    machineType: e2-standard-4
+    diskSizeGb: 100
+    diskType: pd-ssd
+    imageType: COS_CONTAINERD
+    
+    # Service account with minimal required permissions
+    serviceAccount: default
+    oauthScopes:
+    - "https://www.googleapis.com/auth/cloud-platform"
+    
+    # Node labels for scheduling
+    labels:
+      node-type: system
+      workload: system-components
+    
+    # Node taints to ensure only system workloads are scheduled
+    taints:
+    - key: "system-workload"
+      value: "true"
+      effect: "NO_SCHEDULE"
+    
+    # Security settings
+    shieldedInstanceConfig:
+      enableSecureBoot: true
+      enableIntegrityMonitoring: true
+    
+    # Metadata
+    metadata:
+      disable-legacy-endpoints: "true"
+  
+  # Auto-scaling configuration
+  autoscaling:
+    enabled: true
+    minNodeCount: 1
+    maxNodeCount: 5
+  
+  # Node management
+  management:
+    autoUpgrade: true
+    autoRepair: true
+  
+  # Initial node count
+  initialNodeCount: 2
+
+---
+# Application Node Pool - for application workloads
+apiVersion: container.v1
+kind: NodePool
+metadata:
+  name: application-pool
+  cluster: production-gke-cluster
+spec:
+  # Node configuration
+  nodeConfig:
+    machineType: e2-standard-4
+    diskSizeGb: 100
+    diskType: pd-ssd
+    imageType: COS_CONTAINERD
+    
+    # Service account with minimal required permissions
+    serviceAccount: default
+    oauthScopes:
+    - "https://www.googleapis.com/auth/cloud-platform"
+    
+    # Node labels for scheduling
+    labels:
+      node-type: application
+      workload: user-applications
+    
+    # Security settings
+    shieldedInstanceConfig:
+      enableSecureBoot: true
+      enableIntegrityMonitoring: true
+    
+    # Metadata
+    metadata:
+      disable-legacy-endpoints: "true"
+  
+  # Auto-scaling configuration
+  autoscaling:
+    enabled: true
+    minNodeCount: 2
+    maxNodeCount: 10
+  
+  # Node management
+  management:
+    autoUpgrade: true
+    autoRepair: true
+  
+  # Initial node count
+  initialNodeCount: 3

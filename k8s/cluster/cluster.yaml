@@ -1,0 +1,69 @@
+# GKE Cluster Configuration
+# This file contains the main cluster configuration for the production GKE cluster
+# Based on requirements 1.1, 1.2, 1.3 from the requirements document
+
+apiVersion: container.v1
+kind: Cluster
+metadata:
+  name: production-gke-cluster
+  labels:
+    environment: production
+    managed-by: terraform
+spec:
+  # Cluster location and networking
+  location: us-central1
+  network: default
+  subnetwork: default
+  
+  # Private cluster configuration for security
+  privateClusterConfig:
+    enablePrivateNodes: true
+    enablePrivateEndpoint: false
+    masterIpv4CidrBlock: "172.16.0.0/28"
+  
+  # Master authorized networks for security
+  masterAuthorizedNetworksConfig:
+    enabled: true
+    cidrBlocks:
+    - displayName: "Office Network"
+      cidrBlock: "0.0.0.0/0"  # Replace with actual office IP range
+  
+  # Network policy for micro-segmentation
+  networkPolicy:
+    enabled: true
+    provider: CALICO
+  
+  # Workload Identity for secure GCP service access
+  workloadIdentityConfig:
+    workloadPool: "PROJECT_ID.svc.id.goog"  # Replace PROJECT_ID with actual project
+  
+  # RBAC configuration
+  rbacConfig:
+    enabled: true
+  
+  # Cluster features
+  addonsConfig:
+    httpLoadBalancing:
+      disabled: false
+    horizontalPodAutoscaling:
+      disabled: false
+    networkPolicyConfig:
+      disabled: false
+    dnsCacheConfig:
+      enabled: true
+  
+  # Maintenance policy
+  maintenancePolicy:
+    window:
+      dailyMaintenanceWindow:
+        startTime: "03:00"  # UTC
+  
+  # Logging and monitoring
+  loggingService: "logging.googleapis.com/kubernetes"
+  monitoringService: "monitoring.googleapis.com/kubernetes"
+  
+  # Initial node count (will be managed by node pools)
+  initialNodeCount: 1
+  
+  # Remove default node pool (we'll use custom node pools)
+  removeDefaultNodePool: true

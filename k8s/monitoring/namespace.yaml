@@ -1,0 +1,13 @@
+# Monitoring Namespace
+# Based on requirements 5.1, 5.2, 5.3 from the requirements document
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+  labels:
+    name: monitoring
+    component: observability
+    managed-by: kubernetes
+  annotations:
+    description: "Namespace for monitoring stack including Prometheus, Grafana, and AlertManager"

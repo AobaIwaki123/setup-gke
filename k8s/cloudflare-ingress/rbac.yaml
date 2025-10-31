@@ -1,0 +1,187 @@
+# Cloudflare Ingress Controller RBAC Configuration
+# Based on requirements 3.1, 3.2 from the requirements document
+
+---
+# Service Account for Cloudflare Ingress Controller
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cloudflare-ingress-controller
+  namespace: cloudflare-ingress
+  labels:
+    app.kubernetes.io/name: cloudflare-ingress-controller
+    app.kubernetes.io/component: controller
+
+---
+# ClusterRole for Cloudflare Ingress Controller
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cloudflare-ingress-controller
+  labels:
+    app.kubernetes.io/name: cloudflare-ingress-controller
+    app.kubernetes.io/component: controller
+rules:
+# Ingress resources
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - ingresses
+  verbs:
+  - get
+  - list
+  - watch
+  - update
+  - patch
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - ingresses/status
+  verbs:
+  - update
+  - patch
+
+# Services
+- apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - get
+  - list
+  - watch
+
+# Endpoints
+- apiGroups:
+  - ""
+  resources:
+  - endpoints
+  verbs:
+  - get
+  - list
+  - watch
+
+# Secrets (for TLS certificates)
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+
+# ConfigMaps
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+
+# Events
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+
+# Nodes (for node information)
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+
+# Pods (for readiness checks)
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+  - list
+  - watch
+
+---
+# ClusterRoleBinding for Cloudflare Ingress Controller
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cloudflare-ingress-controller
+  labels:
+    app.kubernetes.io/name: cloudflare-ingress-controller
+    app.kubernetes.io/component: controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cloudflare-ingress-controller
+subjects:
+- kind: ServiceAccount
+  name: cloudflare-ingress-controller
+  namespace: cloudflare-ingress
+
+---
+# Role for leader election (namespace-scoped)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: cloudflare-ingress-controller-leader-election
+  namespace: cloudflare-ingress
+  labels:
+    app.kubernetes.io/name: cloudflare-ingress-controller
+    app.kubernetes.io/component: controller
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+
+---
+# RoleBinding for leader election
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cloudflare-ingress-controller-leader-election
+  namespace: cloudflare-ingress
+  labels:
+    app.kubernetes.io/name: cloudflare-ingress-controller
+    app.kubernetes.io/component: controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cloudflare-ingress-controller-leader-election
+subjects:
+- kind: ServiceAccount
+  name: cloudflare-ingress-controller
+  namespace: cloudflare-ingress
