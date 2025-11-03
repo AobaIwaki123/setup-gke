@@ -14,7 +14,54 @@ spec:
     repoURL: https://prometheus-community.github.io/helm-charts
     chart: prometheus
     targetRevision: 27.42.2  # 使用する Helm チャートのバージョン
-    
+    helm:
+      values: |
+        # GKE Autopilot 互換性設定
+        # node-exporter は hostPath と hostNetwork が必要なため無効化
+        prometheus-node-exporter:
+          enabled: false
+
+        # alertmanager の設定
+        alertmanager:
+          enabled: true
+          persistentVolume:
+            enabled: false  # Autopilot では動的プロビジョニングを使用
+          # hostNetwork と hostPID を無効化
+          hostNetwork: false
+          hostPID: false
+          # node affinity の問題を回避
+          affinity: {}
+          nodeSelector: {}
+
+        # server (Prometheus 本体) の設定
+        server:
+          enabled: true
+          persistentVolume:
+            enabled: false  # Autopilot では動的プロビジョニングを使用
+          # hostNetwork と hostPID を無効化
+          hostNetwork: false
+          hostPID: false
+          # node affinity の問題を回避
+          affinity: {}
+          nodeSelector: {}
+
+        # pushgateway の設定
+        pushgateway:
+          enabled: true
+          # hostNetwork と hostPID を無効化
+          hostNetwork: false
+          hostPID: false
+          # node affinity の問題を回避
+          affinity: {}
+          nodeSelector: {}
+
+        # kube-state-metrics の設定
+        kube-state-metrics:
+          enabled: true
+          # node affinity の問題を回避
+          affinity: {}
+          nodeSelector: {}
+
   # デプロイ先の設定
   destination:
     server: https://kubernetes.default.svc  # ローカル Kubernetes クラスター
