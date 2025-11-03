@@ -24,3 +24,13 @@ $ kubectl apply -f argocd-cmd-params-cm.yaml
 $ kubectl rollout restart deployment argocd-server -n argocd # ArgoCD Server を再起動
 $ kubectl apply -f ingress.yaml
 ```
+
+```sh
+$ kubectl apply -f argocd-cm.yaml
+$ kubectl rollout restart deployment argocd-server -n argocd
+```
+
+```sh
+$ argocd login example.com --username admin --password <your-password> --grpc-web
+$ argocd account generate-token
+```
