@@ -1,0 +1,6 @@
+---
+globs: *.sh
+alwaysApply: false
+---
+- setup-xxx.shとcleanup-xxx.shはセットで作成する
+- 
