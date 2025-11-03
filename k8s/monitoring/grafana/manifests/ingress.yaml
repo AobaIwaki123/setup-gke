@@ -1,0 +1,28 @@
+# Grafana を外部に公開するための Ingress 設定
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grafana-ingress
+  namespace: monitoring
+  annotations:
+    # SSL リダイレクトを無効化 - Grafana が insecure モードで動作するため
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    # バックエンドプロトコルを HTTP に指定
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+spec:
+  # Cloudflare Tunnel Ingress Controller を使用
+  ingressClassName: "cloudflare-tunnel"
+  
+  rules:
+  # 公開ホスト名の設定
+  - host: grafana.aooba.net
+    http:
+      paths:
+      # ルートパス以下のすべてのリクエストを Grafana に転送
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: grafana
+            port:
+              number: 80  # Grafana の HTTP ポート

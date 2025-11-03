@@ -1,0 +1,30 @@
+# Prometheus の ArgoCD Application 設定
+# Kubernetes クラスターの監視とメトリクス収集を提供
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: prometheus
+  namespace: argocd
+spec:
+  # ArgoCD プロジェクト設定
+  project: default
+  
+  # Helm チャートのソース設定
+  source:
+    repoURL: https://prometheus-community.github.io/helm-charts
+    chart: prometheus
+    targetRevision: 27.42.2  # 使用する Helm チャートのバージョン
+    
+  # デプロイ先の設定
+  destination:
+    server: https://kubernetes.default.svc  # ローカル Kubernetes クラスター
+    namespace: monitoring
+  
+  # 自動同期の設定
+  syncPolicy:
+    automated:
+      prune: true     # 不要なリソースを自動削除
+      selfHeal: true  # ドリフトを自動修正
+    syncOptions:
+      - CreateNamespace=true    # Namespace が存在しない場合は自動作成
+      - ServerSideApply=true   # Server-side apply を使用してリソースの競合を回避
