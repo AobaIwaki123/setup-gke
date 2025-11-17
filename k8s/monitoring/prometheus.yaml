@@ -1,0 +1,77 @@
+# Prometheus の ArgoCD Application 設定
+# Kubernetes クラスターの監視とメトリクス収集を提供
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: prometheus
+  namespace: argocd
+spec:
+  # ArgoCD プロジェクト設定
+  project: default
+  
+  # Helm チャートのソース設定
+  source:
+    repoURL: https://prometheus-community.github.io/helm-charts
+    chart: prometheus
+    targetRevision: 27.42.2  # 使用する Helm チャートのバージョン
+    helm:
+      values: |
+        # GKE Autopilot 互換性設定
+        # node-exporter は hostPath と hostNetwork が必要なため無効化
+        prometheus-node-exporter:
+          enabled: false
+
+        # alertmanager の設定
+        alertmanager:
+          enabled: true
+          persistentVolume:
+            enabled: false  # Autopilot では動的プロビジョニングを使用
+          # hostNetwork と hostPID を無効化
+          hostNetwork: false
+          hostPID: false
+          # node affinity の問題を回避
+          affinity: {}
+          nodeSelector: {}
+
+        # server (Prometheus 本体) の設定
+        server:
+          enabled: true
+          persistentVolume:
+            enabled: false  # Autopilot では動的プロビジョニングを使用
+          # hostNetwork と hostPID を無効化
+          hostNetwork: false
+          hostPID: false
+          # node affinity の問題を回避
+          affinity: {}
+          nodeSelector: {}
+
+        # pushgateway の設定
+        pushgateway:
+          enabled: true
+          # hostNetwork と hostPID を無効化
+          hostNetwork: false
+          hostPID: false
+          # node affinity の問題を回避
+          affinity: {}
+          nodeSelector: {}
+
+        # kube-state-metrics の設定
+        kube-state-metrics:
+          enabled: true
+          # node affinity の問題を回避
+          affinity: {}
+          nodeSelector: {}
+
+  # デプロイ先の設定
+  destination:
+    server: https://kubernetes.default.svc  # ローカル Kubernetes クラスター
+    namespace: monitoring
+  
+  # 自動同期の設定
+  syncPolicy:
+    automated:
+      prune: true     # 不要なリソースを自動削除
+      selfHeal: true  # ドリフトを自動修正
+    syncOptions:
+      - CreateNamespace=true    # Namespace が存在しない場合は自動作成
+      - ServerSideApply=true   # Server-side apply を使用してリソースの競合を回避
